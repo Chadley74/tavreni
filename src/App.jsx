@@ -19,10 +19,20 @@ function App() {
   });
 
   const [editingTaskId, setEditingTaskId] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks))
   }, [tasks]);
+
+  /*Is filterStatus "all"? Yes, keep the task. Otherwise. Does task.status match filterStatus? Yes, keep it. No, leave it out */
+  const filteredTasks = tasks.filter((task) => {
+    if (filterStatus === "all") {
+      return true
+    } else {
+      return task.status === filterStatus
+    }
+  })
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -161,7 +171,18 @@ function App() {
 
         <section>
           <h2>My Tasks</h2>
-          {tasks.map((task) => {
+
+          <div className="filter-group">
+            <label htmlFor="status-filter">Filter by Status</label>
+            <select id="status-filter" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
+              <option value="all">All</option>
+              <option value="todo">To Do</option>
+              <option value="in-progres">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          {filteredTasks.map((task) => {
             return (
 
             <article className="task-card" key={task.id}>
@@ -199,8 +220,9 @@ function App() {
             </article>
 
           )})}
-          {tasks.length === 0 && (
-            <p>No tasks yet.</p>
+          
+          {filteredTasks.length === 0 && (
+            <p>{filterStatus === "all" ? "No tasks yet.": "No tasks match this filter."}</p>
           )}
         </section>
 

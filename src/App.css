@@ -1,8 +1,184 @@
 header {
-  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
   border-bottom: 1px solid #ccc;
+  padding-top: 28px;
+  padding-bottom: 20px;
+  text-align: center;
 }
 
 main {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+header h1 {
+  margin:0;
+  font-size: 2.5rem;
+  letter-spacing: 1px;
+}
+
+header p {
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-size: 1rem;
+  color: #64748b;
+}
+
+section {
+  margin-bottom: 32px;
+}
+
+section h2 {
+  margin-bottom: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: 2px solid #94a3b8;
+  outline-offset: 2px;
+}
+
+.task-form {
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06)
+}
+
+.primary-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  background-color: #2563eb;
+  color: white;
+
+}
+
+.primary-button:hover {
+  background-color: #1d4ed8;
+}
+
+.task-card {
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06)
+}
+
+.edit-button,
+.delete-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #e0e7ff;
+}
+
+.edit-button:hover {
+  background-color: #c7d2fe;
+}
+
+.delete-button {
+  background-color: #fee2e2;
+}
+
+.delete-button:hover {
+  background-color: #fecaca;
+}
+
+.task-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background-color: #e2e8f0;
+  font-size: 0.85rem;
+}
+
+.priority-low {
+  background-color: #dcfce7;
+}
+
+.priority-medium {
+  background-color: #fef3c7;
+}
+
+.priority-high {
+  background-color: #fee2e2;
+}
+
+.status-todo {
+  background-color: #e2e8f0;
+}
+
+.status-in-progress {
+  background-color: #c1d8f7;
+}
+
+.status-completed {
+  background-color: #dcfce7;
+}
+
+.task-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.task-content h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.task-content p {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.task-dates {
+  margin-top: 12px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.task-dates p {
+  margin: 4px 0;
 }

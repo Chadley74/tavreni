@@ -106,26 +106,43 @@ function App() {
 
         <section>
           <h2>Create Task</h2>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="title">Title</label>
-            <input id="title" type="text" required value={title} onChange={(event) => setTitle(event.target.value)} />
-            <label htmlFor="description">Description</label>
-            <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} ></textarea>
-            <label htmlFor="priority">Priority</label>
-            <select id="priority" value={priority} onChange={(event) => setPriority(event.target.value)} >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-            <label htmlFor="status">Status</label>
-            <select id="status" value={status} onChange={(event) => setStatus(event.target.value)} >
-              <option value="todo">To Do</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
-            <label htmlFor="due-date">Due Date</label>
-            <input id="due-date" type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
-            <button type="submit">{editingTaskId === null ? "Create Task" : "Save Changes"}</button>
+          <form className="task-form" onSubmit={handleSubmit}>
+
+            <div className="form-group">
+              <label htmlFor="title">Title</label>
+              <input id="title" type="text" required value={title} onChange={(event) => setTitle(event.target.value)} />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="description">Description</label>
+              <textarea id="description" value={description} onChange={(event) => setDescription(event.target.value)} ></textarea>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="priority">Priority</label>
+              <select id="priority" value={priority} onChange={(event) => setPriority(event.target.value)} >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="status">Status</label>
+              <select id="status" value={status} onChange={(event) => setStatus(event.target.value)} >
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="due-date">Due Date</label>
+              <input id="due-date" type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
+            </div>
+
+            <button className="primary-button" type="submit">{editingTaskId === null ? "Create Task" : "Save Changes"}</button>
+
           </form>
         </section>
 
@@ -133,20 +150,41 @@ function App() {
           <h2>My Tasks</h2>
           {tasks.map((task) => {
             return (
-            <article key={task.id}>
-              <h3>Title: {task.title}</h3>
-              {task.description && (
-                <p>Description: {task.description}</p>
-              )}
-              <p>Priority: {formatPriority(task.priority)}</p>
-              <p>Status: {formatStatus(task.status)}</p>
-              {task.dueDate && (
-                <p>Due Date: {task.dueDate}</p>
-              )}
-              <p>Created: {task.dateCreated.toLocaleString()}</p>
-              <button type="button" onClick={() => handleEdit(task)}>Edit</button>
-              <button type="button" onClick={() => handleDelete(task.id)}>Delete</button>
+
+            <article className="task-card" key={task.id}>
+              <div className="task-content">
+                <h3>Title: {task.title}</h3>
+
+                {task.description && (
+                  <p>Description: {task.description}</p>
+                )}
+              </div>
+
+              <div className="task-meta">
+                <p>
+                  Priority: <span className={`task-badge priority-${task.priority}`}>{formatPriority(task.priority)}</span>
+                </p>
+
+                <p>
+                  Status: <span className={`task-badge status-${task.status}`}>{formatStatus(task.status)}</span>
+                </p>
+              </div>
+
+              <div className="task-dates">
+                {task.dueDate && (
+                  <p>Due Date: {task.dueDate}</p>
+                )}
+
+                <p>Created: {task.dateCreated.toLocaleString()}</p>
+              </div>
+              
+              <div className="task-actions">
+                <button className="edit-button" type="button" onClick={() => handleEdit(task)}>Edit</button>
+                <button className="delete-button" type="button" onClick={() => handleDelete(task.id)}>Delete</button>
+              </div>
+
             </article>
+
           )})}
           {tasks.length === 0 && (
             <p>No tasks yet.</p>

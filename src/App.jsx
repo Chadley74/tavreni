@@ -8,10 +8,17 @@ function App() {
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState("");
   const [tasks, setTasks] = useState([]);
-  const newId = tasks.length + 1;
+  
   
   function handleSubmit(event) {
     event.preventDefault();
+    const taskIds = tasks.map((task) => task.id);
+    let newId;
+    if (taskIds.length === 0) {
+      newId = 1;
+    } else {
+      newId = Math.max(...taskIds) + 1;
+    }
     const task = {
       id: newId,
       title,
@@ -30,13 +37,34 @@ function App() {
     setDueDate("")
   }
 
+  function formatStatus(status) {
+    if (status === "todo") {
+      return "To Do"
+    } else if (status === "in-progress") {
+      return "In Progress"
+    } else if (status === "completed") {
+      return "Completed"
+    }
+  }
+
+  function formatPriority(priority) {
+    return priority.charAt(0).toUpperCase() + priority.slice(1)
+  }
+
+  function handleDelete(id) {
+    const updateTasks = tasks.filter((task) => task.id !== id);
+    setTasks(updateTasks);
+  }
+
   return (
     <>
       <header>
         <h1>Tavreni</h1>
         <p>Personal Task Manager</p>
       </header>
+
       <main>
+
         <section>
           <h2>Create Task</h2>
           <form onSubmit={handleSubmit}>
@@ -71,12 +99,13 @@ function App() {
               {task.description && (
                 <p>Description: {task.description}</p>
               )}
-              <p>Priority: {task.priority}</p>
-              <p>Status: {task.status}</p>
+              <p>Priority: {formatPriority(task.priority)}</p>
+              <p>Status: {formatStatus(task.status)}</p>
               {task.dueDate && (
                 <p>Due Date: {task.dueDate}</p>
               )}
               <p>Created: {task.dateCreated.toLocaleString()}</p>
+              <button type="button" onClick={() => handleDelete(task.id)}>Delete</button>
             </article>
           )})}
           {tasks.length === 0 && (

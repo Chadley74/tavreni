@@ -8,33 +8,63 @@ function App() {
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState("");
   const [tasks, setTasks] = useState([]);
+  const [editingTaskId, setEditingTaskId] = useState(null);
   
   
   function handleSubmit(event) {
     event.preventDefault();
+
     const taskIds = tasks.map((task) => task.id);
-    let newId;
-    if (taskIds.length === 0) {
-      newId = 1;
+
+    if (editingTaskId !== null) {
+      const updatedTasks = tasks.map((task) => {
+        if (task.id === editingTaskId) {
+          return {
+            ...task,
+            title,
+            description,
+            priority,
+            status,
+            dueDate,
+          }
+        } else {
+          return task
+        }
+      });
+    
+    setTasks(updatedTasks)
+
     } else {
-      newId = Math.max(...taskIds) + 1;
+      
+      let newId;
+
+      if (taskIds.length === 0) {
+        newId = 1;
+      } else {
+        newId = Math.max(...taskIds) + 1;
+      }
+
+      const task = {
+        id: newId,
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated: new Date(),
+      };
+
+      const newTasks = [...tasks, task];
+      setTasks(newTasks);
     }
-    const task = {
-      id: newId,
-      title,
-      description,
-      priority,
-      status,
-      dueDate,
-      dateCreated: new Date(),
-    }
-    const newTasks = [...tasks, task];
-    setTasks(newTasks);
-    setTitle("")
-    setDescription("")
-    setPriority("medium")
-    setStatus("todo")
-    setDueDate("")
+
+    setTitle("");
+    setDescription("");
+    setPriority("medium");
+    setStatus("todo");
+    setDueDate("");
+    setEditingTaskId(null);
+
   }
 
   function formatStatus(status) {
@@ -54,6 +84,15 @@ function App() {
   function handleDelete(id) {
     const updateTasks = tasks.filter((task) => task.id !== id);
     setTasks(updateTasks);
+  }
+
+  function handleEdit(task) {
+    setTitle(task.title)
+    setDescription(task.description)
+    setPriority(task.priority)
+    setStatus(task.status)
+    setDueDate(task.dueDate)
+    setEditingTaskId(task.id)
   }
 
   return (
@@ -86,7 +125,7 @@ function App() {
             </select>
             <label htmlFor="due-date">Due Date</label>
             <input id="due-date" type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
-            <button type="submit">Create Task</button>
+            <button type="submit">{editingTaskId === null ? "Create Task" : "Save Changes"}</button>
           </form>
         </section>
 
@@ -105,6 +144,7 @@ function App() {
                 <p>Due Date: {task.dueDate}</p>
               )}
               <p>Created: {task.dateCreated.toLocaleString()}</p>
+              <button type="button" onClick={() => handleEdit(task)}>Edit</button>
               <button type="button" onClick={() => handleDelete(task.id)}>Delete</button>
             </article>
           )})}

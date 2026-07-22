@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import "./App.css"
 
 function App() {
@@ -7,10 +7,23 @@ function App() {
   const [priority, setPriority] = useState("medium");
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState("");
-  const [tasks, setTasks] = useState([]);
+
+  const [tasks, setTasks] = useState(() => {
+    const savedTasks = localStorage.getItem("tasks")
+
+    if (savedTasks) {
+      return JSON.parse(savedTasks)
+    }
+
+    return []
+  });
+
   const [editingTaskId, setEditingTaskId] = useState(null);
-  
-  
+
+  useEffect(() => {
+    localStorage.setItem("tasks", JSON.stringify(tasks))
+  }, [tasks]);
+
   function handleSubmit(event) {
     event.preventDefault();
 
@@ -175,9 +188,9 @@ function App() {
                   <p>Due Date: {task.dueDate}</p>
                 )}
 
-                <p>Created: {task.dateCreated.toLocaleString()}</p>
+                <p>Created: {new Date(task.dateCreated).toLocaleString()}</p>
               </div>
-              
+
               <div className="task-actions">
                 <button className="edit-button" type="button" onClick={() => handleEdit(task)}>Edit</button>
                 <button className="delete-button" type="button" onClick={() => handleDelete(task.id)}>Delete</button>

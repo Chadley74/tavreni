@@ -118,6 +118,15 @@ function App() {
     setEditingTaskId(task.id)
   }
 
+  function handleCancelEdit() {
+    setTitle("");
+    setDescription("");
+    setPriority("medium");
+    setStatus("todo");
+    setDueDate("");
+    setEditingTaskId(null);
+  }
+
   return (
     <>
       <header>
@@ -165,7 +174,9 @@ function App() {
             </div>
 
             <button className="primary-button" type="submit">{editingTaskId === null ? "Create Task" : "Save Changes"}</button>
-
+            {editingTaskId !== null && (
+              <button className="cancel-button" type="button" onClick={handleCancelEdit}>Cancel</button>
+            )}
           </form>
         </section>
 

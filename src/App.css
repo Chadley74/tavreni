@@ -198,3 +198,16 @@ section h2 {
   border-radius: 6px;
   font: inherit;
 }
+
+.cancel-button {
+  padding: 10px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: white;
+  margin-left: 8px;
+}
+
+.cancel-button:hover {
+  background-color: #f1f5f9;
+}

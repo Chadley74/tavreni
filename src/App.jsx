@@ -20,6 +20,7 @@ function App() {
 
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [sortOrder, setSortOrder] = useState("newest");
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks))
@@ -33,6 +34,35 @@ function App() {
       return task.status === filterStatus
     }
   })
+
+  /*Sort by newest and oldest. a - b = smaller values move toward the front. b - a = larger values move toward the front. Example [5, 2, 9].sort((a, b) => a - b) becomes 2, 5, 9 */
+  const sortedTasks = [...filteredTasks]
+  if (sortOrder === "newest") {
+    sortedTasks.sort((taskA, taskB) => {
+      return new Date(taskB.dateCreated) - new Date(taskA.dateCreated)
+    })
+  } else if (sortOrder === "oldest") {
+    sortedTasks.sort((taskA, taskB) => {
+      return new Date(taskA.dateCreated) - new Date(taskB.dateCreated)
+    }) 
+  } else if (sortOrder === "due-soonest") {
+    sortedTasks.sort((taskA, taskB) => {
+      if (!taskA.dueDate && !taskB.dueDate) return 0
+      if (!taskA.dueDate) return 1
+      if (!taskB.dueDate) return -1
+
+      return new Date(taskA.dueDate) - new Date(taskB.dueDate)
+    })
+  } else if (sortOrder === "due-latest") {
+    sortedTasks.sort((taskA, taskB) => {
+      if (!taskA.dueDate && !taskB.dueDate) return 0
+      if (!taskA.dueDate) return 1
+      if (!taskB.dueDate) return -1
+
+      return new Date(taskB.dueDate) - new Date(taskA.dueDate)
+    })
+  }
+  
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -182,18 +212,30 @@ function App() {
 
         <section>
           <h2>My Tasks</h2>
+          
+          <div className="task-controls">
+            <div className="filter-group">
+              <label htmlFor="status-filter">Filter by Status</label>
+              <select id="status-filter" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
+                <option value="all">All</option>
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
 
-          <div className="filter-group">
-            <label htmlFor="status-filter">Filter by Status</label>
-            <select id="status-filter" value={filterStatus} onChange={(event) => setFilterStatus(event.target.value)}>
-              <option value="all">All</option>
-              <option value="todo">To Do</option>
-              <option value="in-progres">In Progress</option>
-              <option value="completed">Completed</option>
-            </select>
+            <div className="sort-group">
+              <label htmlFor="sort-order">Sort by</label>
+              <select id="sort-order" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
+                <option value="newest">Newest Created</option>
+                <option value="oldest">Oldest Created</option>
+                <option value="due-soonest">Due Date: Soonest</option>
+                <option value="due-latest">Due Date: Latest</option>
+              </select>
+            </div>
           </div>
 
-          {filteredTasks.map((task) => {
+          {sortedTasks.map((task) => {
             return (
 
             <article className="task-card" key={task.id}>

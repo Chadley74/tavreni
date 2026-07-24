@@ -183,20 +183,27 @@ section h2 {
   margin: 4px 0;
 }
 
-.filter-group {
+.task-controls {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
   margin-bottom: 20px;
 }
 
-.filter-group label {
+.filter-group label,
+.sort-group label {
   display: block;
   margin-bottom: 6px;
 }
 
-.filter-gorup select {
+.filter-group select,
+.sort-group select {
+  width: 100%;
   padding: 8px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   font: inherit;
+  box-sizing: border-box;
 }
 
 .cancel-button {

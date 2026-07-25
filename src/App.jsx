@@ -157,6 +157,23 @@ function App() {
     setEditingTaskId(null);
   }
 
+  function isTaskOverdue(task) {
+    if (!task.dueDate) {
+      return false;
+    }
+
+    if (task.status === "completed") {
+      return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dueDate = new Date(task.dueDate);
+
+    return dueDate < today;
+  }
+
   return (
     <>
       <header>
@@ -238,10 +255,14 @@ function App() {
           {sortedTasks.map((task) => {
             return (
 
-            <article className="task-card" key={task.id}>
+            <article className={`task-card ${isTaskOverdue(task) ? "task-overdue" : ""}`} key={task.id}>
               <div className="task-content">
                 <h3>Title: {task.title}</h3>
-
+                
+                {isTaskOverdue(task) && (
+                  <span className="overdue-label">Overdue</span>
+                )}
+                
                 {task.description && (
                   <p>Description: {task.description}</p>
                 )}

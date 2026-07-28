@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const db = require("./database");
 const app = express();
 
 app.use(cors())
@@ -7,81 +8,186 @@ app.use(express.json());
 
 const PORT = 3000;
 
-const tasks = [
-    {
-        id: 1,
-        title: "Finish backend setup",
-        description: "Create the first Express API route",
-        priority: "high",
-        status: "in-progress",
-        dueDate: "2026-07-30"
-    },
-    {
-        id: 2,
-        title: "Review JavaScript",
-        description: "Practice arrays and objects",
-        priority: "medium",
-        status: "todo",
-        dueDate: ""
-    }
-]
-
 app.get("/", (request, response) => {
     response.send("Tavreni backend is running");
 });
 
 app.get("/api/tasks", (request, response) => {
-    response.json(tasks);
+    db.all("SELECT * FROM tasks", [], (error, rows) => {
+        if (error) {
+            return response.status(500).json({
+                message: "Unable to load tasks"
+            });
+        }
+
+        response.json(rows);
+    })
 })
 
 app.get("/api/tasks/:id", (request, response) => {
     const taskId = Number(request.params.id);
-    const task = tasks.find((task) => task.id === taskId);
-    if (!task) {
-        return response.status(400).json({message: "Task not found"});
-    }
-    response.json(task);
-})
+    /*Get one row. ? is a placeholder and replaced with taskId. Handling for errors and no row*/
+    db.get(
+        "SELECT * FROM tasks WHERE id = ?",
+        [taskId],
+        (error, row) => {
+            if (error) {
+                return response.status(500).json({
+                    message: "Unable to load task"
+                });
+            }
+
+            if (!row) {
+                return response.status(404).json({
+                    message: "Task not found"
+                });
+            }
+            response.json(row);
+        }
+    )
+});
 
 
 
 app.put("/api/tasks/:id", (request, response) => {
     const taskId = Number(request.params.id);
-    const taskIndex = tasks.findIndex((task) => task.id === taskId);
-    if (taskIndex === -1) {
-        return response.status(404).json({message: "Task not found"});
-    }
-    tasks[taskIndex] = request.body;
-    response.json(tasks[taskIndex]);
-})
+    
+    const {
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated
+    } = request.body;
+
+    const sql = `
+        UPDATE tasks
+        SET
+          title = ?,
+          description = ?,
+          priority = ?,
+          status = ?,
+          dueDate = ?,
+          dateCreated = ?
+        WHERE id = ?
+    `;
+
+    const values = [
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated,
+        taskId
+    ];
+
+    db.run(sql, values, function (error) {
+        if (error) {
+            return response.status(500).json({
+                message: "Unable to update task"
+            });
+        }
+        /* How many rows changed? 1 - task was found. 0 - no task matched that ID*/
+        if (this.changes === 0) {
+            return response.status(404).json({
+                message: "Task not found"
+            });
+        }
+
+        const updatedTask = {
+            id: taskId,
+            title,
+            description,
+            priority,
+            status,
+            dueDate,
+            dateCreated
+        };
+
+        response.json(updatedTask);
+    });
+});
+
 
 app.delete("/api/tasks/:id", (request, response) => {
     const taskId = Number(request.params.id);
-    const taskIndex = tasks.findIndex((task) => task.id === taskId);
-    if (taskIndex === -1) {
-        return response.status(404).json({message: "Task not found"});
-    }
-    const deletedTask = tasks.splice(taskIndex, 1);
-    response.json(deletedTask[0]);
+    
+    db.run(
+        "DELETE FROM tasks WHERE id = ?",
+        [taskId],
+        function (error) {
+            if (error) {
+                return response.status(500).json({
+                    message: "Unable to delete task"
+                });
+            }
+
+            if (this.changes === 0) {
+                return response.status(404).json({
+                    message: "Task not found"
+                });
+            }
+            response.json({
+                message: "Task deleted"
+            });
+        }
+    )
 })
 
 app.post("/api/tasks", (request, response) => {
-    const taskIds = tasks.map((task) => task.id);
-    let newId;
-    if (taskIds.length === 0) {
-        newId = 1;
-    } else {
-        newId = Math.max(...taskIds) + 1;
-    }
+    /*Pull the task fields from the JSON request */
+    const {
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated
+    } = request.body;
+    
+    /*SQL inserts a new row. Question marks are placeholders*/
+    const sql = `
+      INSERT INTO tasks (
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+    `;
 
-    const newTask = {
-        id: newId,
-        ...request.body
-    };
+    const values = [
+        title,
+        description,
+        priority,
+        status,
+        dueDate,
+        dateCreated
+    ];
 
-    tasks.push(newTask);
+    /* SQL insert, handle any database error, build task object, and send back to React. Regular function used versus arrow to use this.lastID*/
+    db.run(sql, values, function(error) {
+        if (error) {
+            return response.status(500).json({
+                message: "Unable to create task"
+            });
+        }
 
-    response.status(201).json(newTask);
+        const newTask = {
+            id: this.lastID,
+            title,
+            description,
+            priority,
+            status,
+            dueDate,
+            dateCreated
+        };
+        response.status(201).json(newTask);
+    })
 })
 
 app.listen(PORT, () => {

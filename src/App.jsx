@@ -334,7 +334,7 @@ function App() {
           })
         )}
           
-          {filteredTasks.length === 0 && (
+          {!isLoading && !loadError && filteredTasks.length === 0 && (
             <p>{filterStatus === "all" ? "No tasks yet.": "No tasks match this filter."}</p>
           )}
         </section>

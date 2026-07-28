@@ -1,6 +1,8 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 
+app.use(cors())
 app.use(express.json());
 
 const PORT = 3000;
@@ -64,7 +66,18 @@ app.delete("/api/tasks/:id", (request, response) => {
 })
 
 app.post("/api/tasks", (request, response) => {
-    const newTask = request.body;
+    const taskIds = tasks.map((task) => task.id);
+    let newId;
+    if (taskIds.length === 0) {
+        newId = 1;
+    } else {
+        newId = Math.max(...taskIds) + 1;
+    }
+
+    const newTask = {
+        id: newId,
+        ...request.body
+    };
 
     tasks.push(newTask);
 

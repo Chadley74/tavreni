@@ -7,16 +7,11 @@ function App() {
   const [priority, setPriority] = useState("medium");
   const [status, setStatus] = useState("todo");
   const [dueDate, setDueDate] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState("");
 
-  const [tasks, setTasks] = useState(() => {
-    const savedTasks = localStorage.getItem("tasks")
-
-    if (savedTasks) {
-      return JSON.parse(savedTasks)
-    }
-
-    return []
-  });
+  const [tasks, setTasks] = useState([]);
 
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -25,6 +20,24 @@ function App() {
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks))
   }, [tasks]);
+
+  /*Send GET request to express API take HTTP response and convert to JSON and stores the returned task array in existing React tasks state.
+  Added error handling then,catch,finally */
+  useEffect(() => {
+    fetch("http://localhost:3000/api/tasks").then((response) => {
+      if (!response.ok) {
+        throw new Error("Unable to load tasks");
+      }
+      return response.json();
+    }).then((data) => {
+      setTasks(data);
+      setLoadError("");
+    }).catch(() => {
+      setLoadError("Unable to connect to the Tavreni server");
+    }).finally(() => {
+      setIsLoading(false);
+    })
+  }, []);
 
   /*Is filterStatus "all"? Yes, keep the task. Otherwise. Does task.status match filterStatus? Yes, keep it. No, leave it out */
   const filteredTasks = tasks.filter((task) => {
@@ -67,38 +80,34 @@ function App() {
   function handleSubmit(event) {
     event.preventDefault();
 
-    const taskIds = tasks.map((task) => task.id);
-
     if (editingTaskId !== null) {
-      const updatedTasks = tasks.map((task) => {
-        if (task.id === editingTaskId) {
-          return {
-            ...task,
-            title,
-            description,
-            priority,
-            status,
-            dueDate,
-          }
-        } else {
-          return task
-        }
+      const existingTask = tasks.find(
+        (task) => task.id === editingTaskId
+      );
+
+      const updatedTask = {
+        ...existingTask,
+        title,
+        description,
+        priority,
+        status,
+        dueDate
+      };
+
+      fetch(`http://localhost:3000/api/tasks/${editingTaskId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedTask),
+      }).then((response) => response.json()).then((savedTask) => {
+        setTasks(
+          tasks.map((task) => task.id === editingTaskId ? savedTask : task)
+        );
       });
-    
-    setTasks(updatedTasks)
 
     } else {
-      
-      let newId;
-
-      if (taskIds.length === 0) {
-        newId = 1;
-      } else {
-        newId = Math.max(...taskIds) + 1;
-      }
-
       const task = {
-        id: newId,
         title,
         description,
         priority,
@@ -107,17 +116,30 @@ function App() {
         dateCreated: new Date(),
       };
 
-      const newTasks = [...tasks, task];
-      setTasks(newTasks);
+      fetch("http://localhost:3000/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(task),
+      }).then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to create task");
+        }
+        return response.json();
+      }).then((createdTask) => {
+        setTasks((currentTasks) => [...currentTasks, createdTask]);
+        setActionError("");
+      }).catch((error) => {
+        setActionError("Unable to create task. Check that the server is running.");
+      });
     }
-
     setTitle("");
     setDescription("");
     setPriority("medium");
     setStatus("todo");
     setDueDate("");
     setEditingTaskId(null);
-
   }
 
   function formatStatus(status) {
@@ -135,8 +157,15 @@ function App() {
   }
 
   function handleDelete(id) {
-    const updateTasks = tasks.filter((task) => task.id !== id);
-    setTasks(updateTasks);
+    fetch(`http://localhost:3000/api/tasks/${id}`, {
+      method: "DELETE",
+    }).then((response) => {
+      if (!response.ok) {
+        throw new Error("Unable to delete task");
+      }
+      setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id)
+    );
+    });
   }
 
   function handleEdit(task) {
@@ -225,6 +254,9 @@ function App() {
               <button className="cancel-button" type="button" onClick={handleCancelEdit}>Cancel</button>
             )}
           </form>
+          {actionError && (
+            <p className="error-message">{actionError}</p>
+          )}
         </section>
 
         <section>
@@ -251,8 +283,13 @@ function App() {
               </select>
             </div>
           </div>
-
-          {sortedTasks.map((task) => {
+          
+          {isLoading ? (
+            <p>Loading tasks...</p>
+          ) : loadError ? (
+            <p className="error-message">{loadError}</p>
+          ) : (
+            sortedTasks.map((task) => {
             return (
 
             <article className={`task-card ${isTaskOverdue(task) ? "task-overdue" : ""}`} key={task.id}>
@@ -262,7 +299,7 @@ function App() {
                 {isTaskOverdue(task) && (
                   <span className="overdue-label">Overdue</span>
                 )}
-                
+
                 {task.description && (
                   <p>Description: {task.description}</p>
                 )}
@@ -293,7 +330,9 @@ function App() {
 
             </article>
 
-          )})}
+            );
+          })
+        )}
           
           {filteredTasks.length === 0 && (
             <p>{filterStatus === "all" ? "No tasks yet.": "No tasks match this filter."}</p>
@@ -302,7 +341,8 @@ function App() {
 
       </main>
     </>
-  )
+  );
 }
+
 
 export default App

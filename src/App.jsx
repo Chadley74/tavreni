@@ -80,6 +80,10 @@ function App() {
   function handleSubmit(event) {
     event.preventDefault();
 
+    if (!title.trim()) {
+      setActionError("Title cannot be empty.");
+      return;
+    }
     if (editingTaskId !== null) {
       const existingTask = tasks.find(
         (task) => task.id === editingTaskId
@@ -100,7 +104,7 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(updatedTask),
-      }).then((response) => response.json()).then((savedTask) => {
+      }).then(async (response) => response.json()).then((savedTask) => {
         setTasks(
           tasks.map((task) => task.id === editingTaskId ? savedTask : task)
         );

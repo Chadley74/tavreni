@@ -2,28 +2,27 @@ const express = require("express");
 const router = express.Router();
 const validateTask = require("../middleware/vaildateTask");
 const taskModel = require("../models/taskModel");
+const validateTaskId = require("../middleware/validateTaskId");
 
-router.get("/", (request, response) => {
+router.get("/", (request, response, next) => {
     taskModel.getAllTasks((error, rows) => {
         if (error) {
-            return response.status(500).json({
-                message: "Unable to load tasks"
-            });
+            return next(error);
         };
         response.json(rows);
     });
 });
 
-router.get("/:id", (request, response) => {
+router.get("/:id", validateTaskId, (request, response, next) => {
     const taskId = Number(request.params.id);
+
     taskModel.getTaskById(taskId, (error, row) => {
         if (error) {
-            return response.status(500).json({
-                message: "Unable to load task"
-            });
+            return next(error);
         };
         if (!row) {
             return response.status(404).json({
+                error: "Not Found",
                 message: "Task not found"
             });
         };
@@ -31,18 +30,17 @@ router.get("/:id", (request, response) => {
     });
 });
 
-router.put("/:id", validateTask, (request, response) => {
+router.put("/:id", validateTaskId, validateTask, (request, response, next) => {
     const taskId = Number(request.params.id);
 
     taskModel.updateTask(taskId, request.body, (error, updatedTask) => {
         if (error) {
-            return response.status(500).json({
-                message: "Unable to update task"
-            });
+            return next(error);
         };
 
         if (!updatedTask) {
             return response.status(404).json({
+                error: "Not Found",
                 message: "Task not found"
             });
         };
@@ -52,18 +50,17 @@ router.put("/:id", validateTask, (request, response) => {
 });
 
 
-router.delete("/:id", (request, response) => {
+router.delete("/:id", validateTaskId, (request, response, next) => {
     const taskId = Number(request.params.id);
-    
+
     taskModel.deleteTask(taskId, (error, changes) => {
             if (error) {
-                return response.status(500).json({
-                    message: "Unable to delete task"
-                });
+                return next(error);
             }
 
             if (changes === 0) {
                 return response.status(404).json({
+                    error: "Not Found",
                     message: "Task not found"
                 });
             }
@@ -73,13 +70,11 @@ router.delete("/:id", (request, response) => {
     });
 });
 
-router.post("/", validateTask, (request, response) => {
+router.post("/", validateTask, (request, response, next) => {
 
     taskModel.createTask(request.body, (error, newTask) => {
         if (error) {
-            return response.status(500).json({
-                message: "Unable to create task"
-            });
+            return next(error);
         }
 
         response.status(201).json(newTask);

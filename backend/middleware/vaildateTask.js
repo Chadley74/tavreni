@@ -9,6 +9,7 @@ function validateTask(request, response, next) {
     /*Validate required task fields are there*/
     if (!title?.trim() || !priority || !status || !dateCreated) {
         return response.status(400).json({
+            error: "Bad Request",
             message: "Title, priority, status, and dateCreated are required."
         });
     }
@@ -21,7 +22,7 @@ function validateTask(request, response, next) {
             message: "Priority must be low, medium, or high"
         });
     }
-    
+
     /*Validate status - only "todo", "in-progress", "completed" */
     const allowedStatuses = ["todo", "in-progress", "completed"];
 

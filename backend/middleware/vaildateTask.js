@@ -10,7 +10,7 @@ function validateTask(request, response, next) {
     if (!title?.trim() || !priority || !status || !dateCreated) {
         return response.status(400).json({
             error: "Bad Request",
-            message: "Title, priority, status, and dateCreated are required."
+            message: "Title, priority, status, and dateCreated are required"
         });
     }
 
@@ -19,6 +19,7 @@ function validateTask(request, response, next) {
 
     if (!allowedPriorities.includes(priority)) {
         return response.status(400).json({
+            error: "Bad Request",
             message: "Priority must be low, medium, or high"
         });
     }
@@ -28,7 +29,8 @@ function validateTask(request, response, next) {
 
     if (!allowedStatuses.includes(status)) {
         return response.status(400).json({
-            message: "Status must be todo, in-progress, or completed."
+            error: "Bad Request",
+            message: "Status must be todo, in-progress, or completed"
         });
     }
 

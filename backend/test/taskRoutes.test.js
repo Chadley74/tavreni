@@ -17,7 +17,7 @@ describe("Tavreni API", () => {
         done
         );
     });
-    
+
     beforeEach((done) => {
         db.run("DELETE FROM tasks", done);
     });
@@ -25,7 +25,7 @@ describe("Tavreni API", () => {
     test("GET / returns the backend status message", async () => {
         const response = await request(app).get("/");
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(201);
         expect(response.text).toBe("Tavreni backend is running");
     });
 

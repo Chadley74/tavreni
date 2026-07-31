@@ -3,6 +3,21 @@ const app = require("../app");
 const db = require("../database");
 
 describe("Tavreni API", () => {
+    beforeAll((done) => {
+        db.run(`
+            CREATE TABLE IF NOT EXISTS tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            priority TEXT NOT NULL,
+            status TEXT NOT NULL,
+            dueDate TEXT,
+            dateCreated TEXT NOT NULL
+            )`,
+        done
+        );
+    });
+    
     beforeEach((done) => {
         db.run("DELETE FROM tasks", done);
     });

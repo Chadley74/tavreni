@@ -16,6 +16,8 @@ function App() {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortOrder, setSortOrder] = useState("newest");
+  
+  const intentionalError = ;
 
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks))

@@ -1,5 +1,7 @@
 # Tavreni
 
+[![Tavreni CI](https://github.com/Chadley74/tavreni/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Chadley74/tavreni/actions/workflows/ci.yml)
+
 Tavreni is a full-stack task management web application written for learning purposes. Users can add, view, modify, manage and delete their tasks within the application. It is built with a Reach frontend and Express API on the backend, which uses SQLite as a database.
 
 ## Features

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react"
 import "./App.css"
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+
 function App() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -24,7 +26,7 @@ function App() {
   /*Send GET request to express API take HTTP response and convert to JSON and stores the returned task array in existing React tasks state.
   Added error handling then,catch,finally */
   useEffect(() => {
-    fetch("http://localhost:3000/api/tasks").then((response) => {
+    fetch(`${API_BASE_URL}/api/tasks`).then((response) => {
       if (!response.ok) {
         throw new Error("Unable to load tasks");
       }
@@ -98,7 +100,7 @@ function App() {
         dueDate
       };
 
-      fetch(`http://localhost:3000/api/tasks/${editingTaskId}`, {
+      fetch(`${API_BASE_URL}/api/tasks/${editingTaskId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -120,7 +122,7 @@ function App() {
         dateCreated: new Date(),
       };
 
-      fetch("http://localhost:3000/api/tasks", {
+      fetch(`${API_BASE_URL}/api/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -161,7 +163,7 @@ function App() {
   }
 
   function handleDelete(id) {
-    fetch(`http://localhost:3000/api/tasks/${id}`, {
+    fetch(`${API_BASE_URL}/api/tasks/${id}`, {
       method: "DELETE",
     }).then((response) => {
       if (!response.ok) {

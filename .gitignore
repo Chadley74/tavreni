@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 backend/tavreni.test.db
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
 
 # Editor directories and files
 .vscode/*

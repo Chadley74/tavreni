@@ -98,9 +98,123 @@ Install the following before running Tavreni:
 ### Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Chadley74/tavreni.git
 cd tavreni
 ```
+## Environment Configuration
+
+Environment variables are used to enable execution of the same code in local development, automated tests and cloud environments.
+
+### Frontend Configuration
+
+Create a file named `.env.local` in the project root:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+The `VITE_API_BASE_URL` sets the API base URL for the React frontend to send API requests to.
+
+The project includes `.env.example` as a configuration template:
+
+```env
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+Copy the example file when setting up a new local environment:
+
+```bash
+cp .env.example .env.local
+```
+
+Restart the Vite development server after changing frontend environment variables:
+
+```bash
+npm run dev
+```
+
+Limited to frontend only, production variables of the name VITE_ that get embedded into the compiled frontend application and should NEVER contain any secrets.
+
+### Backend Configuration
+
+The Express backend supports the following environment variables:
+
+| Variable      | Purpose                                   | Local default           |
+| ------------- | ----------------------------------------- | ----------------------- |
+| `PORT`        | Port on which the Express server listens  | `3000`                  |
+| `CORS_ORIGIN` | Frontend origin permitted to call the API | `http://localhost:5173` |
+
+The project includes a backend configuration template at:
+
+```text
+backend/.env.example
+```
+
+Its contents are:
+
+```env
+PORT=3000
+CORS_ORIGIN=http://localhost:5173
+```
+
+No backend .env file is needed for local development as the backend has already been set up to use local fallback values.
+
+When Tavreni is deployed, the cloud platform will provide values similar to:
+
+```env
+PORT=3000
+CORS_ORIGIN=https://your-tavreni-frontend.example
+```
+
+Do not add a trailing slash to `CORS_ORIGIN`.
+
+Use:
+
+```env
+CORS_ORIGIN=http://localhost:5173
+```
+
+Not:
+
+```env
+CORS_ORIGIN=http://localhost:5173/
+```
+
+### Local Environment Files
+
+Local environment files are excluded from Git because they may contain settings specific to a machine or secrets.
+
+Files such as these should not be committed:
+
+```text
+.env
+.env.local
+.env.*.local
+backend/.env
+backend/.env.local
+```
+
+The example files should remain committed:
+
+```text
+.env.example
+backend/.env.example
+```
+
+These files contain information about the required environment variables but do not store them.
+
+### CI Configuration
+
+GitHub Actions provides the frontend API address directly to the Vite build:
+
+```yaml
+- name: Build frontend
+  run: npm run build
+  env:
+    VITE_API_BASE_URL: http://localhost:3000
+```
+
+The backend tests use the default local values for `PORT` and `CORS_ORIGIN`.
 
 ## Run the Backend
 

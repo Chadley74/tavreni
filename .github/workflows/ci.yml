@@ -55,3 +55,22 @@ jobs:
         run: npm run build
         env:
           VITE_API_BASE_URL: http://localhost:3000
+
+  container-build:
+    name: Backend Container Build
+    runs-on: ubuntu-latest
+    needs: backend-tests
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Build backend Docker image
+        run: docker build -t tavreni-api:ci .backend
+
+      - name: Verify SQLite loads in container
+        run: |
+          docker run --rm \
+          --entrypoint node \
+          tavreni-api:ci \
+          -e "require('sqlite3'); console.log('SQLite loaded successfully')"

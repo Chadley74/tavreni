@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     env:
-      VITE_API_BASE_URL: https://placeholder.invalid
+      VITE_API_BASE_URL: https://ca-tavreni-api-dev.lemonocean-ff212c14.eastus2.azurecontainerapps.io
     steps:
       - uses: actions/checkout@v3
         with:

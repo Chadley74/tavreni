@@ -213,7 +213,7 @@ function App() {
     <>
       <header>
         <h1>Tavreni</h1>
-        <p>Personal Task Manager</p>
+        <p>Personal Task Manager - Azure Deployment Test</p>
       </header>
 
       <main>

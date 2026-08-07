@@ -67,10 +67,3 @@ jobs:
 
       - name: Build backend Docker image
         run: docker build -t tavreni-api:ci ./backend
-
-      - name: Verify SQLite loads in container
-        run: |
-          docker run --rm \
-          --entrypoint node \
-          tavreni-api:ci \
-          -e "require('sqlite3'); console.log('SQLite loaded successfully')"

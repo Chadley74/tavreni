@@ -1,16 +1,17 @@
 function validateTask(request, response, next) {
     const {
         title,
+        description,
         priority,
         status,
-        dateCreated
+        dueDate
     } = request.body;
 
     /*Validate required task fields are there*/
-    if (!title?.trim() || !priority || !status || !dateCreated) {
+    if (!title?.trim() || !priority || !status) {
         return response.status(400).json({
             error: "Bad Request",
-            message: "Title, priority, status, and dateCreated are required"
+            message: "Title, priority, and status are required"
         });
     }
 

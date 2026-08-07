@@ -1,131 +1,29 @@
-const db = require("../database");
+const taskRepository = require("../database/taskRepository");
 
-function getAllTasks(callback) {
-    db.all("SELECT * FROM tasks", [], callback);
-}
+async function getAllTasks() {
+    return await taskRepository.getAllTasks();
+};
 
-function getTaskById(taskId, callback) {
-    db.get("SELECT * FROM tasks WHERE id = ?", [taskId], callback);
-}
+async function getTaskById(taskId) {
+    return await taskRepository.getTaskById(taskId);
+};
 
-function createTask(task, callback) {
-    const {
-        title,
-        description,
-        priority,
-        status,
-        dueDate,
-        dateCreated
-    } = task;
+async function createTask(task) {
+    return await taskRepository.createTask(task);
+};
 
-    const sql = `
-    INSERT INTO tasks (
-      title,
-      description,
-      priority,
-      status,
-      dueDate,
-      dateCreated
-      )
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+async function updateTask(taskId, task) {
+    return await taskRepository.updateTask(taskId, task);
+};
 
-    const values = [
-        title,
-        description,
-        priority,
-        status,
-        dueDate,
-        dateCreated
-    ];
+async function deleteTask(taskId) {
+    return await taskRepository.deleteTask(taskId);
+};
 
-    db.run(sql, values, function(error) {
-        if (error) {
-            return callback(error);
-        }
-
-        callback(null, {
-            id: this.lastID,
-            title,
-            description,
-            priority,
-            status,
-            dueDate,
-            dateCreated
-        });
-    });
-}
-
-function updateTask(taskId, task, callback) {
-    const {
-        title,
-        description,
-        priority,
-        status,
-        dueDate,
-        dateCreated
-    } = task;
-
-    const sql = `
-      UPDATE tasks
-      SET
-        title = ?,
-        description = ?,
-        priority = ?,
-        status = ?,
-        dueDate = ?,
-        dateCreated = ?
-      WHERE id = ?
-    `;
-
-    const values = [
-        title,
-        description,
-        priority,
-        status,
-        dueDate,
-        dateCreated,
-        taskId
-    ];
-
-    db.run(sql, values, function (error) {
-        if (error) {
-            return callback(error);
-        }
-
-        if (this.changes === 0) {
-            return callback(null, null);
-        }
-
-        callback(null, {
-            id: taskId,
-            title,
-            description,
-            priority,
-            status,
-            dueDate,
-            dateCreated
-        });
-    });
-}
-
-function deleteTask(taskId, callback) {
-    db.run(
-        "DELETE FROM tasks WHERE id = ?",
-        [taskId],
-        function (error) {
-            if (error) {
-                return callback(error);
-            }
-
-            callback(null, this.changes);
-        }
-    );
-}
 module.exports = {
     getAllTasks,
     getTaskById,
     createTask,
     updateTask,
-    deleteTask
+    deleteTask,
 };

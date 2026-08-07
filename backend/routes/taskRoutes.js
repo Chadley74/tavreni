@@ -1,84 +1,84 @@
 const express = require("express");
 const router = express.Router();
-const validateTask = require("../middleware/vaildateTask");
+const validateTask = require("../middleware/validateTask");
 const taskModel = require("../models/taskModel");
 const validateTaskId = require("../middleware/validateTaskId");
 
-router.get("/", (request, response, next) => {
-    taskModel.getAllTasks((error, rows) => {
-        if (error) {
-            return next(error);
-        };
+router.get("/", async (request, response, next) => {
+
+    try {
+        const rows = await taskModel.getAllTasks();
         response.json(rows);
-    });
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.get("/:id", validateTaskId, (request, response, next) => {
-    const taskId = Number(request.params.id);
+router.get("/:id", validateTaskId, async (request, response, next) => {
 
-    taskModel.getTaskById(taskId, (error, row) => {
-        if (error) {
-            return next(error);
-        };
+    try {
+        const taskId = Number(request.params.id);
+        const row = await taskModel.getTaskById(taskId);
         if (!row) {
             return response.status(404).json({
                 error: "Not Found",
                 message: "Task not found"
             });
-        };
+        }
         response.json(row);
-    });
+    } catch (error) {
+        next(error);
+    }
 });
 
-router.put("/:id", validateTaskId, validateTask, (request, response, next) => {
-    const taskId = Number(request.params.id);
-
-    taskModel.updateTask(taskId, request.body, (error, updatedTask) => {
-        if (error) {
-            return next(error);
-        };
-
+router.put("/:id", validateTaskId, validateTask, async (request, response, next) => {
+ 
+    try {
+        const taskId = Number(request.params.id);
+        const updatedTask = await taskModel.updateTask(
+            taskId,
+            request.body
+        );
         if (!updatedTask) {
             return response.status(404).json({
                 error: "Not Found",
                 message: "Task not found"
             });
-        };
-
-        response.json(updatedTask);
-    });
-});
-
-
-router.delete("/:id", validateTaskId, (request, response, next) => {
-    const taskId = Number(request.params.id);
-
-    taskModel.deleteTask(taskId, (error, changes) => {
-            if (error) {
-                return next(error);
-            }
-
-            if (changes === 0) {
-                return response.status(404).json({
-                    error: "Not Found",
-                    message: "Task not found"
-                });
-            }
-            response.json({
-                message: "Task deleted"
-            });
-    });
-});
-
-router.post("/", validateTask, (request, response, next) => {
-
-    taskModel.createTask(request.body, (error, newTask) => {
-        if (error) {
-            return next(error);
         }
+        response.json(updatedTask);
+    } catch (error) {
+        next(error);
+    }
+});
 
+
+router.delete("/:id", validateTaskId, async (request, response, next) => {
+
+    try {
+        const taskId = Number(request.params.id);
+        const deleted = await taskModel.deleteTask(taskId);
+        if (!deleted) {
+            return response.status(404).json({
+                error: "Not Found",
+                message: "Task not found"
+            });
+        }
+        response.json({
+            message: "Task deleted"
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post("/", validateTask, async (request, response, next) => {
+
+    try {
+        const newTask = await taskModel.createTask(request.body);
         response.status(201).json(newTask);
-    });
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;

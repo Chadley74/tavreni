@@ -12,12 +12,9 @@
   "type": "commonjs",
   "dependencies": {
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "mssql": "^12.7.0",
-    "sqlite3": "^6.0.1"
-  },
-  "allowScripts": {
-    "sqlite3@6.0.1": true
+    "mssql": "^12.7.0"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

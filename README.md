@@ -2,7 +2,7 @@
 
 [![Tavreni CI](https://github.com/Chadley74/tavreni/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Chadley74/tavreni/actions/workflows/ci.yml)
 
-Tavreni is a full-stack task management web application written for learning purposes. Users can add, view, modify, manage and delete their tasks within the application. It is built with a Reach frontend and Express API on the backend, which uses SQLite as a database.
+Tavreni is a full-stack task management web application written for learning purposes. Users can add, view, modify, manage and delete their tasks within the application. It is built with a Reach frontend and Express API and MSSQL as the backend. Everything is setup to run on Microsoft Azure. The React frontend is hosted on Azure Static Web Apps, the Express backend runs in Azure Container Apps, and persistent task data is stored in Azure SQL Database.
 
 ## Features
 
@@ -11,11 +11,15 @@ Tavreni is a full-stack task management web application written for learning pur
 * Delete tasks
 * View all saved tasks
 * Filter tasks by status
-* Persist task data in SQLite
+* Persist task data in Azure SQL Database
 * Validate task data on the backend
+* Use parameterized SQL queries
 * Return consistent API error responses
 * Display loading and error states in the frontend
 * Run automated API tests with Jest and Supertest
+* Build and deploy through GitHub Actions
+* Run the backend as a Docker container
+* Automatically deploy the frontend to Azure Static Web Apps
 
 ## Technology Stack
 
@@ -26,18 +30,34 @@ Tavreni is a full-stack task management web application written for learning pur
 * JavaScript
 * HTML
 * CSS
+* Azure Static Web Apps
 
 ### Backend
 
 * Node.js
 * Express
-* SQLite
+* mssql
 * CORS
+* Docker
+* Azure Container Apps
+
+### Database
+
+* Azure SQL Database
+* Microsoft SQL Server / T-SQL
+* Parameterized SQL queries
+* SQL connection pooling
 
 ### Testing
 
 * Jest
 * Supertest
+* Mocked database repository
+
+### CI/CD
+* GitHub Actions
+* GitHub Container Registry
+* Azure Static Web Apps deployment workflow
 
 ### Development Tools
 
@@ -46,33 +66,8 @@ Tavreni is a full-stack task management web application written for learning pur
 * GitHub
 * Visual Studio Code
 * Postman
-
-## Project Structure
-
-```text
-tavreni/
-├── backend/
-│   ├── middleware/
-│   │   ├── errorHandler.js
-│   │   ├── validateTask.js
-│   │   └── validateTaskId.js
-│   ├── models/
-│   │   └── taskModel.js
-│   ├── routes/
-│   │   └── taskRoutes.js
-│   ├── tests/
-│   │   └── taskRoutes.test.js
-│   ├── app.js
-│   ├── database.js
-│   ├── server.js
-│   ├── tavreni.db
-│   └── package.json
-├── public/
-├── src/
-├── index.html
-├── package.json
-└── README.md
-```
+* Docker Desktop
+* Azure Portal
 
 ## Task Fields
 
@@ -89,11 +84,13 @@ tavreni/
 
 ### Prerequisites
 
-Install the following before running Tavreni:
+Install the following before running Tavreni locally:
 
 * Node.js
 * npm
 * Git
+
+Docker Desktop is optional for running the backend as a container.
 
 ### Clone the Repository
 
@@ -133,16 +130,28 @@ Restart the Vite development server after changing frontend environment variable
 npm run dev
 ```
 
-Limited to frontend only, production variables of the name VITE_ that get embedded into the compiled frontend application and should NEVER contain any secrets.
+Vite variables beginning with VITE_ are embedded into the compiled frontend and must never contain secrets
+
+In Azure, the Static Web Apps workflow provides the production Container Apps URL as the value of VITE_API_BASE_URL.
 
 ### Backend Configuration
 
-The Express backend supports the following environment variables:
+The backend requires both Express and Azure SQL variables.
 
-| Variable      | Purpose                                   | Local default           |
-| ------------- | ----------------------------------------- | ----------------------- |
-| `PORT`        | Port on which the Express server listens  | `3000`                  |
-| `CORS_ORIGIN` | Frontend origin permitted to call the API | `http://localhost:5173` |
+Create:
+
+backend/.env
+
+| Variable      | Purpose                                   | Default                            |
+| ------------- | ----------------------------------------- | ---------------------------------- |
+| `PORT`        | Port on which the Express server listens  | `3000`                             |
+| `CORS_ORIGIN` | Frontend origin permitted to call the API | `http://localhost:5173`            |
+| `DB_SERVER`   | Azure SQL logical server hostname         | `your-server.database.windows.net` |
+| `DB_NAME`     | Azure SQL database name                   | `your-database-name`               |
+| `DB_USER`     | SQL database username                     | `your-database-user`               |
+| `DB_PASSWORD` | SQL database password                     | `your-database-password`           |
+| `DB_PORT`     | SQL Server port                           | `1433`                             |
+| `DB_ENCRYPT`  | Enable encrypted SQL connections          | `true`                             |
 
 The project includes a backend configuration template at:
 
@@ -150,34 +159,17 @@ The project includes a backend configuration template at:
 backend/.env.example
 ```
 
-Its contents are:
+Its documents the required variables without containing real credentials:
 
 ```env
 PORT=3000
 CORS_ORIGIN=http://localhost:5173
-```
-
-No backend .env file is needed for local development as the backend has already been set up to use local fallback values.
-
-When Tavreni is deployed, the cloud platform will provide values similar to:
-
-```env
-PORT=3000
-CORS_ORIGIN=https://your-tavreni-frontend.example
-```
-
-Do not add a trailing slash to `CORS_ORIGIN`.
-
-Use:
-
-```env
-CORS_ORIGIN=http://localhost:5173
-```
-
-Not:
-
-```env
-CORS_ORIGIN=http://localhost:5173/
+DB_SERVER=
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_PORT=1433
+DB_ENCRYPT=true
 ```
 
 ### Local Environment Files
@@ -233,14 +225,16 @@ npm install
 Start the Express server:
 
 ```bash
-node server.js
+npm start
 ```
 
-The backend will run at:
+The backend runs locally at:
 
 ```text
 http://localhost:3000
 ```
+
+The backend connects to Azure SQL using the values defined in backend/.env.
 
 ## Run the Frontend
 
@@ -284,9 +278,15 @@ Both the frontend and backend must be running for Tavreni to work correctly.
   "description": "Document the application setup and features",
   "priority": "medium",
   "status": "in-progress",
-  "dueDate": "",
-  "dateCreated": "2026-07-31T15:00:00.000Z"
+  "dueDate": ""
 }
+```
+The client does not provide dateCreated.
+
+Azure SQL automatically generates the creation timestamp using:
+
+```text
+SYSUTCDATETIME()
 ```
 
 ## API Error Responses
@@ -340,8 +340,28 @@ The backend includes automated API tests for:
 * Deleting tasks
 * Invalid task IDs
 * Missing tasks
-* Invalid task data
+* Invalid titles
+* Invalid priorities
+* Invalid statuses
 * Unknown API routes
+
+The automated tests do not connect to the live Azure SQL database.
+
+Instead, the task repository is mocked:
+
+```text
+Supertest
+     |
+     v
+Express Routes
+     |
+     v
+Task Model
+     |
+     v
+Mocked Task Repository
+```
+This keeps the test fast, repeatable, and independent of Azure availability while preventing automated tests from modifying cloud database data.
 
 Run the tests from the backend directory:
 
@@ -349,41 +369,222 @@ Run the tests from the backend directory:
 npm test
 ```
 
-The test suite uses a separate SQLite database:
-
-```text
-tavreni.test.db
-```
-
-This protects the normal development database from test data.
-
 ## Database
 
-Tavreni uses SQLite for persistent task storage.
+Tavreni uses Azure SQL Database for persistent task storage.
 
-The development database is located at:
+The Azure SQL `tasks` table stores:
 
 ```text
-backend/tavreni.db
+id
+title
+description
+priority
+status
+dueDate
+dateCreated
 ```
 
-The database and `tasks` table are created automatically when the backend starts.
+The `id` field is generated using a SQL Server identity column:
+
+```sql
+id INT IDENTITY(1,1) PRIMARY KEY
+```
+
+The `dateCreated` field is automatically generated by Azure SQL:
+
+```sql
+dateCreated DATETIME2(7) NOT NULL
+DEFAULT (SYSUTCDATETIME())
+```
+
+The database also uses constraints to restrict valid priority and status values.
+
+### Priority
+
+```text
+low
+medium
+high
+```
+
+### Status
+
+```text
+todo
+in-progress
+completed
+```
+
+## Parameterized Queries
+
+Database operations are implemented in:
+
+```text
+backend/database/taskRepository.js
+```
+
+The backend uses parameterized SQL requests rather than inserting user-controlled values directly into SQL statements.
+
+Example:
+
+```javascript
+.input("title", sql.NVarChar(255), title)
+```
+
+## SQL Connection Pooling
+
+Azure SQL connections are managed through:
+
+```text
+backend/database/sqlServer.js
+```
+
+The backend creates and reuses a SQL connection pool rather than establishing a completely new database connection for every API request.
+
+## Docker
+
+The Express backend is containerized using Docker.
+
+Build the backend image locally from the project root:
+
+```bash
+docker build -t tavreni-api:local ./backend
+```
+
+Run the container:
+
+```bash
+docker run --name tavreni-api-container -p 3000:3000 tavreni-api:local
+```
+
+When running the container against Azure SQL, the required database environment variables must also be supplied.
+
+The production backend container image is published to GitHub Container Registry:
+
+```text
+ghcr.io/chadley74/tavreni-api
+```
+
+## Continuous Integration
+
+Tavreni uses GitHub Actions for continuous integration.
+
+The main CI workflow is:
+
+```text
+.github/workflows/ci.yml
+```
+
+The workflow validates:
+
+```text
+Backend Tests
+Frontend Build
+Backend Container Build
+```
+
+The CI workflow does not connect to the live Azure SQL database.
+
+## Backend Container Publishing
+
+Backend container images are published through:
+
+```text
+.github/workflows/publish-backend-image.yml
+```
+
+When backend code changes on the `main` branch, GitHub Actions:
+
+```text
+Checks out the repository
+→ builds the backend Docker image
+→ publishes the image to GitHub Container Registry
+```
+
+The workflow publishes image tags including:
+
+```text
+latest
+sha-<commit-hash>
+```
+
+Azure Container Apps runs the published backend image.
+
+## Azure Static Web Apps Deployment
+
+The React frontend is deployed using Azure Static Web Apps.
+
+Azure Static Web Apps uses a GitHub Actions workflow to automatically build and deploy changes pushed to `main`.
+
+The frontend receives the Azure Container Apps API URL through:
+
+```env
+VITE_API_BASE_URL
+```
+
+The deployed request flow is:
+
+```text
+Browser
+→ Azure Static Web Apps
+→ Azure Container Apps
+→ Azure SQL Database
+```
+
+## Azure Container Apps Deployment
+
+The Express backend is hosted using Azure Container Apps.
+
+Setting the minimum replica count to `0` allows the backend to scale down when idle.
+
+The backend container receives Azure SQL configuration through Container App environment variables.
+
+The password is not stored in the source repository.
+
+## Azure SQL Deployment
+
+The database uses persistent cloud storage, so task information survives Container App restarts, scaling events, and revision deployments.
 
 ## Current Status
 
 Tavreni currently supports:
 
 * Full task CRUD functionality
-* SQLite persistence
+* Persistent Azure SQL storage
+* React frontend hosted in Azure
+* Express API hosted in Azure Container Apps
+* Dockerized backend
+* GitHub Container Registry image publishing
 * Backend validation
-* Consistent API error responses
+* Parameterized SQL queries
+* SQL connection pooling
 * Centralized error handling
+* Consistent API error responses
 * Automated API testing
-* Separate development and testing databases
+* GitHub Actions CI
+* Automated Azure Static Web Apps deployment
+
 
 ## Purpose
 
-Tavreni is my first full-stack web application. It's a learning project that's helping me practice tools like React, JavaScript (back-end) and REST API. The backend I use is Express framework with a SQLite database to store tasks.
+Tavreni is my first full-stack web application. It's a learning project to provide hands-on experience with:
+
+* React
+* JavaScript
+* Node.js
+* Express
+* REST APIs
+* SQL databases
+* Azure SQL Database
+* Azure Static Web Apps
+* Azure Container Apps
+* Docker
+* GitHub Actions
+* CI/CD
+* Cloud application configuration
+* Cloud security
+* Application testing
 
 ## Author
 
